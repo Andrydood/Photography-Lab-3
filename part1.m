@@ -2,12 +2,13 @@
 sequence = load_sequence('footage', 'footage_', 1, 657, 3, 'png');
 
 %Create and open output video
-video = VideoWriter('outputFile.avi');
+video = VideoWriter('output1.avi');
 open(video);
 
 %init
 previousFrame = sequence(:,:,1);
 difference = 0;
+onFrame = 0;
 
 for frame = 1:657
     thisFrame = sequence(:,:,frame);
@@ -16,7 +17,10 @@ for frame = 1:657
     
     if(difference>3000000)
         %Text is written on the image
-        imWrite = insertText(thisFrame,[0 0],['Scene Change ' num2str(difference)]); 
+        onFrame = 10;
+    end
+    if(onFrame > 0)
+        imWrite = insertText(thisFrame,[0 0],['Scene Change ']);
     else
         imWrite = thisFrame;     
     end
@@ -25,7 +29,9 @@ for frame = 1:657
     
     previousFrame = thisFrame;
     
-    difference = 0;
+    if (onFrame > 0)
+        onFrame = onFrame - 1;
+    end
 end
 
 %Save video
