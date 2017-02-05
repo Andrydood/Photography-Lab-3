@@ -21,7 +21,7 @@ for frame = 1:657
     
     imWrite = imhistmatch(thisFrame,averageFrame);
     
-    writeVideo(video,imWrite);
+    writeVideo(video,[thisFrame,imWrite]);
         
 end
 

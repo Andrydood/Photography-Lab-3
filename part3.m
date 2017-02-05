@@ -11,11 +11,14 @@ p = zeros(1,6);
 dFrame = zeros(sizeX,sizeY);
 modFrame = zeros(sizeX,sizeY);
 
-for frame = 1+1:50-1
-    %Get frames
+for frame = 1+3:657-3
+    %Get frames and average them over previous and next frame
     thisFrame = im2double(sequence(:,:,frame));
     prevFrame = im2double(sequence(:,:,frame-1));
     nextFrame = im2double(sequence(:,:,frame+1));
+        
+    %calculate average of 6 neighbor frames
+    avgFrame = imgaussfilt((sum(im2double(sequence(:,:,frame-3:frame+3)),3)-thisFrame)/6);
     
     %Pad frames
     thisFramePad = padImg(thisFrame);
@@ -26,7 +29,7 @@ for frame = 1+1:50-1
         for y= 1+1:sizeY
 
             p = [prevFramePad(x+1,y), prevFramePad(x,y), prevFramePad(x-1,y),...
-                 nextFramePad(x+1,y), nextFramePad(x,y), nextFramePad(x-1,y)];  
+                 nextFramePad(x+1,y), nextFramePad(x,y), nextFramePad(x-1,y)];
                
             if(min(p) - thisFramePad(x,y)>0)
             d = min(p) - thisFramePad(x,y); 
@@ -35,23 +38,27 @@ for frame = 1+1:50-1
             else
             d = 0;
             end
-            if(d>0.10)
+            if(d>0.0005)
             d = 1;
             end
             dFrame(x-1,y-1) = d;
         end
     end
     
+    
+    %If blotch, fill in with average of 3 previous and next frame after
+    %gaussian blur
     for x = 1+1:sizeX
         for y= 1+1:sizeY
             if(dFrame(x,y))
-                  
+                modFrame(x,y) = avgFrame(x,y);
             else
-                modFrame(x,y) = thisFrame(x,y);
-            end
-       end
+                modFrame(x,y) = thisFrame(x,y); 
+            end            
+        end
     end
-    imWrite = [thisFrame, dFrame,modFrame ];     
+        
+    imWrite = [thisFrame, modFrame, ((thisFrame-modFrame)~=0) ];     
 
     writeVideo(video,imWrite);
     
@@ -61,3 +68,4 @@ end
 
 %Save video
 close(video);
+
