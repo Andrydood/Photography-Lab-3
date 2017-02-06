@@ -1,29 +1,29 @@
-%Load sequence of images
-sequence = load_sequence('footage', 'footage_', 1, 657, 3, 'png');
+function [ sequence_out ] = part2( sequence )
 
-%Create and open output video
-video = VideoWriter('output2.avi');
-open(video);
+length = size(sequence,3);
 
+sequence_out = sequence;
 
 averageNum = 10;
 
 averageFrame = (sum(sequence(:,:,1:averageNum),3)/averageNum)/255;
+previousFrame = sequence(:,:,1);
 
-
-for frame = 1:657
+for frame = 1:length
+    thisFrame = sequence(:,:,frame);
     
-    if(frame>averageNum)
-        averageFrame = (sum(sequence(:,:,frame-averageNum:frame),3)/averageNum)/255;
+    difference = sum(sum(abs(thisFrame - previousFrame)));
+    
+    if(difference>3000000)
+        %Scene change
+        averageFrame = (sum(sequence(:,:,frame:frame+averageNum),3)/averageNum)/255;
+        
     end
     
-    thisFrame = im2double(sequence(:,:,frame));
-    
-    imWrite = imhistmatch(thisFrame,averageFrame);
-    
-    writeVideo(video,[thisFrame,imWrite]);
-        
+    sequence_out(:,:,frame) = imhistmatch(thisFrame,averageFrame);
+
+    previousFrame = thisFrame;
+
 end
 
-%Save video
-close(video);
+end
